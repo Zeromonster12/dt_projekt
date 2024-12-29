@@ -29,10 +29,7 @@ Tento diagram ukazuje, ako sú rôzne údaje prepojené a ako môžeme vykonáva
 
 ## 2. Návrh dimenzionálneho modelu
 
-# Multi-Dimenzionálny Model Hviezdy pre Predaj Hudby
-
-
-## Faktová tabuľka: `Fact_Sales`
+### Faktová tabuľka: `Fact_Sales`
 
 - **Kľúče:**
   - `SaleId` (Primárny kľúč): Unikátny identifikátor pre každý záznam o predaji.
@@ -42,8 +39,6 @@ Tento diagram ukazuje, ako sú rôzne údaje prepojené a ako môžeme vykonáva
   - `UnitPrice`  Cena jednej skladby pri predaji.
   - `Quantity`  Počet predaných kusov konkrétnej skladby.
   - `TotalAmount`  Celková suma za predanú skladbu, ktorá je výsledkom násobenia ceny za jednotku a počtu predaných kusov.
-
----
 
 ## Dimenzionálne tabuľky
 
@@ -79,3 +74,103 @@ Tento diagram ukazuje, ako sú rôzne údaje prepojené a ako môžeme vykonáva
 
 
 ![Obrázok 2 Schéma Hviezdy](https://github.com/Zeromonster12/dt_projekt/blob/main/Star%20schema.png?raw=true)
+
+## 3. ETL proces v Snowflake
+### 3.1 Extract
+Tento krok sa zameriava na získanie dát zo súborov (napríklad CSV súborov) uložených v **stage** a ich načítanie do dočasných tabuliek (staging tabuliek) v Snowflake.
+
+- **Vytvorenie stage**:
+```sql
+CREATE OR REPLACE STAGE my_stage;
+```
+Tento príkaz vytvára stage, ktorý sa používa na uloženie súborov (ako napríklad CSV súbory) pred ich spracovaním.
+- **Načítanie dát do staging tabuliek (COPY INTO)**:
+```sql
+COPY INTO genre_staging
+FROM @my_stage/genre.csv
+FILE_FORMAT = (TYPE = 'CSV' FIELD_OPTIONALLY_ENCLOSED_BY = '"' SKIP_HEADER = 1);
+```
+Tento príkaz načítava dáta z CSV súboru (`genre.csv`) uloženého v stage do staging tabuľky `genre_staging`. 
+### 3.2 Transform
+Transformačná fáza ETL procesu v tomto prípade spočívala v spracovaní a úprave dát z dočasných staging tabuliek do dimenzií a faktovej tabuľky. Tento krok je kľúčový, pretože zaisťuje, že dáta sú vo forme, ktorá je vhodná na analýzu a reporting. Tu je podrobný popis tohto procesu:
+
+
+### 1. Vytvorenie dimenzií
+Dimenzionálne tabuľky (napr. `dim_artist`, `dim_album`, `dim_genre`, `dim_track`, `dim_invoice`) sú nevyhnutné na zorganizovanie dát tak, aby sa dali efektívne používať v analýzach. Každá z týchto tabuliek obsahuje jedinečné hodnoty pre každý atribút a slúži ako referenčná tabuľka pre faktovú tabuľku. Kľúčovým aspektom transformácie je výber a extrakcia relevantných údajov zo staging tabuliek.
+#### Príklady dimenzií:
+- **Dim_Artist:** Obsahuje jedinečné informácie o umelcoch, ako sú `ArtistId` a `Name`. Vytvára sa tým základ pre priradenie predajov k umelcom.
+```sql
+CREATE TABLE dim_artistAS
+SELECT DISTINCT
+	ar.ArtistId AS dim_artistId,
+	ar.Name AS artist_name
+FROM artist_staging ar;
+```
+- **Dim_Genre:** Tento krok extrahuje a uchováva informácie o hudobných žánroch. Tento atribút je dôležitý pre analýzu predajov podľa žánrov.
+```sql
+CREATE TABLE dim_genre AS
+SELECT DISTINCT
+	g.Genre_Id AS dim_genreId,
+	g.GenreName AS genre_name
+FROM genre_staging g;
+```
+
+- **Dim_Track:** Táto tabuľka uchováva informácie o skladbách, ako je názov, skladateľ, dĺžka skladby a cena.
+```sql
+CREATE TABLE dim_track AS
+SELECT DISTINCT t.TrackId AS dim_trackId,
+	t.Name AS track_name,
+	t.Composer AS track_composer,
+	t.Milliseconds AS track_duration_ms,
+	t.Bytes AS track_size_bytes,
+	t.UnitPrice AS track_price
+FROM track_staging t;
+```
+- **Dim_Invoice:** Táto tabuľka uchováva podrobnosti o faktúrach, vrátane adresy, mesta a celkovej sumy faktúry.
+```sql
+CREATE TABLE dim_invoice AS
+SELECT DISTINCT
+    i.InvoiceId AS dim_invoiceId,
+    i.InvoiceDate AS invoice_date,
+    i.BillingAddress AS billing_address,
+    i.BillingCity AS billing_city,
+    i.BillingState AS billing_state,
+    i.BillingCountry AS billing_country,
+    i.BillingPostalCode AS billing_postal_code,
+    i.Total AS total_amount
+FROM invoice_staging i;
+```
+- **Faktová tabuľka**: obsahuje agregované a podrobné údaje o predaji. V tomto prípade sa vytvára `fact_sales`, ktorá spája dimenziu faktúry, skladby, albumu, umelca a žánru a uchováva metriky ako cena za skladbu, množstvo predaných kusov a celková suma.
+```sql
+CREATE TABLE fact_sales AS
+SELECT
+    i.InvoiceId AS dim_invoiceId,
+    il.TrackId AS dim_trackId,
+    al.AlbumId AS dim_albumId,
+    ar.ArtistId AS dim_artistId,
+    g.Genre_Id AS dim_genreId,
+    il.UnitPrice AS track_price,
+    il.Quantity AS quantity_sold,
+    (il.UnitPrice * il.Quantity) AS total_amount
+FROM invoiceline_staging il
+JOIN track_staging t ON il.TrackId = t.TrackId
+JOIN album_staging al ON t.AlbumId = al.AlbumId
+JOIN artist_staging ar ON al.ArtistId = ar.ArtistId
+JOIN genre_staging g ON t.GenreId = g.Genre_Id
+JOIN invoice_staging i ON il.InvoiceId = i.InvoiceId;
+```
+Transformácia zahŕňa spojenie údajov z rôznych staging tabuliek, aby sa vytvorili riadky, ktoré sa ukladajú do faktovej tabuľky.
+
+### 3.3 Load
+
+Po úspešnom vytvorení dimenzií a faktovej tabuľky boli dáta načítané do konečného formátu. Na záver boli staging tabuľky vymazané, čo prispelo k efektívnejšiemu využitiu úložiska.
+
+- **Vymazanie staging tabuliek**:
+```sql
+DROP TABLE IF EXISTS album_staging;
+DROP TABLE IF EXISTS artist_staging;
+DROP TABLE IF EXISTS genre_staging;
+DROP TABLE IF EXISTS invoice_staging;
+DROP TABLE IF EXISTS invoiceline_staging;
+DROP TABLE IF EXISTS track_staging;
+```
