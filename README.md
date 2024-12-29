@@ -174,3 +174,61 @@ DROP TABLE IF EXISTS invoice_staging;
 DROP TABLE IF EXISTS invoiceline_staging;
 DROP TABLE IF EXISTS track_staging;
 ```
+
+## 4. Vizualizácia dát
+Dashboard obsahuje 5 vizualizácií, ktoré poskytujú prehľad o predajoch hudby na základe rôznych faktorov ako žánre, krajiny, umelci, albumy a čas. Tieto grafy umožňujú analyzovať, ktoré produkty a regióny generujú najväčší príjem, a identifikovať predajné trendy v závislosti od času, čo pomáha lepšie porozumieť spotrebiteľským preferenciám a trhovým podmienkam.
+
+
+### 1. Graf: Predaj podľa hudobných žánrov
+Tento graf zobrazuje celkový predaj podľa jednotlivých hudobných žánrov. Pomáha zodpovedať otázku, ktorý hudobný žáner generuje najvyššie príjmy z predaja.
+
+```sql
+SELECT g.genre_name, SUM(fs.total_amount) AS total_sales
+FROM fact_sales fs
+JOIN dim_genre g ON fs.dim_genreId = g.dim_genreId
+GROUP BY g.genre_name
+ORDER BY total_sales DESC;
+```
+
+
+### **Graf 2: Predaj podľa krajiny zákazníkov**
+Tento graf zobrazuje celkový predaj podľa krajiny fakturácie. Pomáha zodpovedať otázku, v ktorých krajinách sa dosahujú najvyššie príjmy z predaja.
+
+```sql
+SELECT i.billing_country, SUM(fs.total_amount) AS total_sales
+FROM fact_sales fs
+JOIN dim_invoice i ON fs.dim_invoiceId = i.dim_invoiceId
+GROUP BY i.billing_country
+ORDER BY total_sales DESC;	
+```
+
+###  **Graf 3: Najpredávanejší umelci**
+Tento graf zobrazuje celkový predaj podľa umelcov. Pomáha zodpovedať otázku, ktorí umelci dosahujú najvyššie príjmy z predaja.
+
+```sql
+SELECT a.artist_name, SUM(fs.total_amount) AS total_sales
+FROM fact_sales fs
+JOIN dim_artist a ON fs.dim_artistId = a.dim_artistId
+GROUP BY a.artist_name
+ORDER BY total_sales DESC;
+```
+###  **Graf 4: Predaje podľa albumu**
+Tento graf zobrazuje celkový predaj podľa albumov. Pomáha zodpovedať otázku, ktoré albumy generujú najvyššie príjmy z predaja.
+```sql
+SELECT al.album_title, SUM(fs.total_amount) AS total_sales
+FROM fact_sales fs
+JOIN dim_album al ON fs.dim_albumId = al.dim_albumId
+GROUP BY al.album_title
+ORDER BY total_sales DESC;
+```
+
+
+### **Graf 5: Vývoj predaja v čase**
+Tento graf zobrazuje celkový predaj podľa dátumu fakturácie. Pomáha zodpovedať otázku, ako sa príjmy z predaja menili v priebehu času.
+ ```sql 
+ SELECT DATE(i.invoice_date) AS sale_date,
+ SUM(fs.total_amount) AS total_sales
+ FROM fact_sales fs
+ JOIN dim_invoice i ON fs.dim_invoiceId = i.dim_invoiceId
+ GROUP BY sale_date ORDER BY sale_date;
+```
