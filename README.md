@@ -95,7 +95,7 @@ Tento príkaz načítava dáta z CSV súboru (`genre.csv`) uloženého v stage d
 Transformačná fáza ETL procesu v tomto prípade spočívala v spracovaní a úprave dát z dočasných staging tabuliek do dimenzií a faktovej tabuľky. Tento krok je kľúčový, pretože zaisťuje, že dáta sú vo forme, ktorá je vhodná na analýzu a reporting. Tu je podrobný popis tohto procesu:
 
 
-### 1. Vytvorenie dimenzií
+#### Vytvorenie dimenzií
 Dimenzionálne tabuľky (napr. `dim_artist`, `dim_album`, `dim_genre`, `dim_track`, `dim_invoice`) sú nevyhnutné na zorganizovanie dát tak, aby sa dali efektívne používať v analýzach. Každá z týchto tabuliek obsahuje jedinečné hodnoty pre každý atribút a slúži ako referenčná tabuľka pre faktovú tabuľku. Kľúčovým aspektom transformácie je výber a extrakcia relevantných údajov zo staging tabuliek.
 #### Príklady dimenzií:
 - **Dim_Artist:** Obsahuje jedinečné informácie o umelcoch, ako sú `ArtistId` a `Name`. Vytvára sa tým základ pre priradenie predajov k umelcom.
@@ -177,9 +177,10 @@ DROP TABLE IF EXISTS track_staging;
 
 ## 4. Vizualizácia dát
 Dashboard obsahuje 5 vizualizácií, ktoré poskytujú prehľad o predajoch hudby na základe rôznych faktorov ako žánre, krajiny, umelci, albumy a čas. Tieto grafy umožňujú analyzovať, ktoré produkty a regióny generujú najväčší príjem, a identifikovať predajné trendy v závislosti od času, čo pomáha lepšie porozumieť spotrebiteľským preferenciám a trhovým podmienkam.
+![Obrázok 2 Schéma Hviezdy](https://github.com/Zeromonster12/dt_projekt/blob/main/dashboard.png?raw=true)
 
 
-### 1. Graf: Predaj podľa hudobných žánrov
+### **Graf 1: Predaj podľa hudobných žánrov**
 Tento graf zobrazuje celkový predaj podľa jednotlivých hudobných žánrov. Pomáha zodpovedať otázku, ktorý hudobný žáner generuje najvyššie príjmy z predaja.
 
 ```sql
