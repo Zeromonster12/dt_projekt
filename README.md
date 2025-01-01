@@ -64,21 +64,21 @@ Tento diagram ukazuje, ako sú rôzne údaje prepojené a ako môžeme vykonáva
      - `Bytes`: Veľkosť skladby v bajtoch.
      - `UnitPrice`: Cena skladby.
    - Táto dimenzia obsahuje podrobnosti o jednotlivých skladbách. Každá skladba v faktovej tabuľke je spojená s touto dimenziou cez `TrackId`. 
-   - Používame SCD typu 1, pretože údaje o skladbách sa spravidla nemenia. Ak dôjde k zmene (napr. aktualizácia názvu skladby), staré údaje sa prepíšu novými, pretože nie je potrebné uchovávať historické verzie.
+   - Používame SCD typu 1, pretože údaje o skladbách sa spravidla nemenia. Ak dôjde k zmene, staré údaje sa prepíšu novými, pretože nie je potrebné uchovávať historické verzie.
 
 ### 3. **Dim_Album** (SCD typu 1)
    - **Atributy:**
      - `AlbumId`: Identifikátor albumu.
      - `Title`: Názov albumu.
    -  Táto dimenzia obsahuje informácie o albumoch, ku ktorým skladby patria. V faktovej tabuľke je každá skladba spojená s albumom cez `AlbumId`.
-   - Používame SCD typu 1, pretože údaje o albumoch sa spravidla nemenia. Ak dôjde k zmene (napr. aktualizácia názvu skladby), staré údaje sa prepíšu novými, pretože nie je potrebné uchovávať historické verzie.
+   - Používame SCD typu 1, pretože údaje o albumoch sa spravidla nemenia. Ak dôjde k zmene, staré údaje sa prepíšu novými, pretože nie je potrebné uchovávať historické verzie.
 
 ### 4. **Dim_Artist** (SCD typu 1)
    - **Atributy:**
      - `ArtistId`: Identifikátor umelca.
      - `Name`: Meno umelca.
    - Záto dimenzia obsahuje informácie o umelcoch, ktorí vytvorili skladby. V faktovej tabuľke je každá skladba spojená s umelcom cez `ArtistId`.
-   - Používame SCD typu 1, pretože údaje o umelcoch sa spravidla nemenia. Ak dôjde k zmene (napr. aktualizácia názvu skladby), staré údaje sa prepíšu novými, pretože nie je potrebné uchovávať historické verzie.
+   - Používame SCD typu 1, pretože údaje o umelcoch sa spravidla nemenia. Ak dôjde k zmene, staré údaje sa prepíšu novými, pretože nie je potrebné uchovávať historické verzie.
 
 <p align="center">
   <img src="https://github.com/Zeromonster12/dt_projekt/blob/main/Star%20schema.png?raw=true" alt="Star Schema">
