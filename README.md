@@ -25,7 +25,11 @@ Téma projektu sa zameriava na analýzu predaja hudby v rámci databázy **Chino
 ### 1.3 ERD diagram, ktorý znázorňuje vzťahy medzi tabuľkami
 Tento diagram ukazuje, ako sú rôzne údaje prepojené a ako môžeme vykonávať analýzy na rôznych úrovniach (zákazníci, faktúry, skladby, albumy, žánre, umelci).
 
-![Obrázok 1 ERD schéma](https://github.com/Zeromonster12/dt_projekt/blob/main/ERD%20sch%C3%A9ma.png?raw=true)
+<p align="center">
+  <img src="https://github.com/Zeromonster12/dt_projekt/blob/main/ERD%20sch%C3%A9ma.png?raw=true" alt="ERD Schema">
+  <br>
+  <em>Obrázok 1 Entitno-relačná schéma ChinookDB</em>
+</p>
 
 ## 2. Návrh dimenzionálneho modelu
 
@@ -49,6 +53,7 @@ Tento diagram ukazuje, ako sú rôzne údaje prepojené a ako môžeme vykonáva
      - `BillingAddress`, `BillingCity`, `BillingState`, `BillingCountry`, `BillingPostalCode`: Podrobnosti o adrese fakturácie.
      - `Total`: Celková suma faktúry.
    - Táto dimenzia obsahuje informácie o faktúrach, ktoré sa generujú pri nákupe skladieb. Faktúra je prepojená s faktovou tabuľkou cez `InvoiceId`.
+   - Používame SCD typu 2, pretože faktúry môžu obsahovať historické údaje, ktoré sa môžu meniť (napr. fakturačná adresa, štát, mesto). SCD typu 2 nám umožňuje uchovávať historické verzie údajov pre analýzu, napríklad na zistenie, vývoja fakturačných adries v čase.
 
 ### 2. **Dim_Track** (SCD typu 1)
    - **Atributy:**
@@ -59,21 +64,27 @@ Tento diagram ukazuje, ako sú rôzne údaje prepojené a ako môžeme vykonáva
      - `Bytes`: Veľkosť skladby v bajtoch.
      - `UnitPrice`: Cena skladby.
    - Táto dimenzia obsahuje podrobnosti o jednotlivých skladbách. Každá skladba v faktovej tabuľke je spojená s touto dimenziou cez `TrackId`. 
+   - Používame SCD typu 1, pretože údaje o skladbách sa spravidla nemenia. Ak dôjde k zmene (napr. aktualizácia názvu skladby), staré údaje sa prepíšu novými, pretože nie je potrebné uchovávať historické verzie.
 
 ### 3. **Dim_Album** (SCD typu 1)
    - **Atributy:**
      - `AlbumId`: Identifikátor albumu.
      - `Title`: Názov albumu.
    -  Táto dimenzia obsahuje informácie o albumoch, ku ktorým skladby patria. V faktovej tabuľke je každá skladba spojená s albumom cez `AlbumId`.
+   - Používame SCD typu 1, pretože údaje o albumoch sa spravidla nemenia. Ak dôjde k zmene (napr. aktualizácia názvu skladby), staré údaje sa prepíšu novými, pretože nie je potrebné uchovávať historické verzie.
 
 ### 4. **Dim_Artist** (SCD typu 1)
    - **Atributy:**
      - `ArtistId`: Identifikátor umelca.
      - `Name`: Meno umelca.
    - Záto dimenzia obsahuje informácie o umelcoch, ktorí vytvorili skladby. V faktovej tabuľke je každá skladba spojená s umelcom cez `ArtistId`.
+   - Používame SCD typu 1, pretože údaje o umelcoch sa spravidla nemenia. Ak dôjde k zmene (napr. aktualizácia názvu skladby), staré údaje sa prepíšu novými, pretože nie je potrebné uchovávať historické verzie.
 
-
-![Obrázok 2 Schéma Hviezdy](https://github.com/Zeromonster12/dt_projekt/blob/main/Star%20schema.png?raw=true)
+<p align="center">
+  <img src="https://github.com/Zeromonster12/dt_projekt/blob/main/Star%20schema.png?raw=true" alt="Star Schema">
+  <br>
+  <em>Obrázok 2 Schéma hviezdy pre ChinookDB</em>
+</p>
 
 ## 3. ETL proces v Snowflake
 ### 3.1 Extract
@@ -177,8 +188,12 @@ DROP TABLE IF EXISTS track_staging;
 
 ## 4. Vizualizácia dát
 Dashboard obsahuje 5 vizualizácií, ktoré poskytujú prehľad o predajoch hudby na základe rôznych faktorov ako žánre, krajiny, umelci, albumy a čas. Tieto grafy umožňujú analyzovať, ktoré produkty a regióny generujú najväčší príjem, a identifikovať predajné trendy v závislosti od času, čo pomáha lepšie porozumieť spotrebiteľským preferenciám a trhovým podmienkam.
-![Obrázok 2 Schéma Hviezdy](https://github.com/Zeromonster12/dt_projekt/blob/main/dashboard.png?raw=true)
 
+<p align="center">
+  <img src="https://github.com/Zeromonster12/dt_projekt/blob/main/dashboard.png?raw=true" alt="Dashboard screenshot">
+  <br>
+  <em>Obrázok 3 Screenshot dashboardu pre ChinookDB</em>
+</p>
 
 ### **Graf 1: Predaj podľa hudobných žánrov**
 Tento graf zobrazuje celkový predaj podľa jednotlivých hudobných žánrov. Pomáha zodpovedať otázku, ktorý hudobný žáner generuje najvyššie príjmy z predaja.
@@ -233,3 +248,7 @@ Tento graf zobrazuje celkový predaj podľa dátumu fakturácie. Pomáha zodpove
  JOIN dim_invoice i ON fs.dim_invoiceId = i.dim_invoiceId
  GROUP BY sale_date ORDER BY sale_date;
 ```
+
+---
+
+**Autor:** Martin Mucha
