@@ -43,8 +43,6 @@ Tento diagram ukazuje, ako sú rôzne údaje prepojené a ako môžeme vykonáva
 
 ## 2. Návrh dimenzionálneho modelu
 
-# Popis navrhnutých tabuliek v dimenzionálnom modeli
-
 ## Faktová tabuľka: `Fact_Sales`
 Faktová tabuľka `Fact_Sales` obsahuje hlavné metriky a kľúče, ktoré sa používajú pri analýze predajov skladieb. Táto tabuľka obsahuje transakčné dáta o predajoch, ako aj kľúče, ktoré sa spájajú s dimenzionálnymi tabuľkami.
 
