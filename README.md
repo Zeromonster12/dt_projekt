@@ -251,6 +251,29 @@ FROM invoice_staging i
 JOIN customer_staging c ON i.customerid = c.customerid;
 ```
 
+- **Dim_date**: Uchováva informácie o dátumoch, je využívaná na správu dátumov. Dim_Date obsahuje rôzne časové atribúty, ako je deň, mesiac, rok, štvrťrok, deň v týždni, týždeň a názov dňa, čo umožňuje flexibilné analýzy podľa rôznych časových období.
+```sql
+CREATE TABLE dim_date AS
+SELECT DISTINCT
+    ROW_NUMBER() OVER (ORDER BY CAST(i.invoicedate AS DATE)) AS dim_dateid,
+    CAST(i.invoicedate AS DATE) AS date,
+    DATE_PART('day', i.invoicedate) AS day,
+    DATE_PART('month', i.invoicedate) AS month,
+    DATE_PART('year', i.invoicedate) AS year,
+    DATE_PART('quarter', i.invoicedate) AS quarter,
+    CASE
+        WHEN DATE_PART('dow', i.invoicedate) = 0 THEN 'Sunday'
+        WHEN DATE_PART('dow', i.invoicedate) = 1 THEN 'Monday'
+        WHEN DATE_PART('dow', i.invoicedate) = 2 THEN 'Tuesday'
+        WHEN DATE_PART('dow', i.invoicedate) = 3 THEN 'Wednesday'
+        WHEN DATE_PART('dow', i.invoicedate) = 4 THEN 'Thursday'
+        WHEN DATE_PART('dow', i.invoicedate) = 5 THEN 'Friday'
+        WHEN DATE_PART('dow', i.invoicedate) = 6 THEN 'Saturday'
+    END AS day_name,
+    DATE_PART('dow', i.invoicedate) + 1 AS day_week,
+    EXTRACT(WEEK FROM DATE_TRUNC('WEEK', i.invoicedate + INTERVAL '1 DAY')) AS week
+FROM invoice_staging i;
+```
 - **Vytvorenie faktovej tabuľky**: Faktová tabuľka fact_sales obsahuje agregované a podrobné údaje o predaji, spájajúce dimenzie, ako sú faktúry, skladby, albumy, umelci, žánre a médiá.
 ```sql
 CREATE TABLE fact_sales AS
