@@ -189,7 +189,7 @@ FROM track_staging t;
 
 - **Dim_Customer**: Uchováva informácie o zákazníkoch, vrátane ich kontaktných údajov a informácií o podporovaní zástupcovi.
 ```sql
-CREATE TABLE IF NOT EXISTS dim_customer AS
+CREATE TABLE  dim_customer AS
 SELECT DISTINCT
     c.customerid AS dim_customerid,
     c.firstname AS first_name,
@@ -233,7 +233,7 @@ FROM employee_staging e;
 
 - **Dim_Invoice**: Uchováva informácie o faktúrach, vrátane zákazníka a údajov o platbe.
 ```sql
-CREATE TABLE IF NOT EXISTS dim_invoice AS
+CREATE TABLE dim_invoice AS
 SELECT DISTINCT
     i.invoiceid AS dim_invoiceid,
     i.customerid AS customer_id,
