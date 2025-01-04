@@ -277,27 +277,27 @@ FROM invoice_staging i;
 CREATE TABLE fact_sales AS
 SELECT
     il.invoicelineid AS fact_salesid,
-    i.invoiceid AS invoice_id,
+    i.dim_invoiceid AS invoice_id,
     il.quantity AS quantity,
     il.unitprice AS unit_price,
-    t.trackid AS track_id,
-    g.genreid AS genre_id,
-    a.albumid AS album_id,
-    ar.artistid AS artist_id,
-    m.mediatypeid AS media_type_id,
-    c.customerid AS customer_id,
-    e.employeeid AS employee_id,
+    t.dim_trackid AS track_id,
+    g.dim_genreid AS genre_id,
+    a.dim_albumid AS album_id,
+    ar.dim_artistid AS artist_id,
+    m.dim_media_typeid AS media_type_id,
+    c.dim_customerid AS customer_id,
+    e.dim_employeeid AS employee_id,
     d.dim_dateid AS date_id
 FROM invoiceline_staging il
-JOIN invoice_staging i ON il.invoiceid = i.invoiceid
-JOIN track_staging t ON il.trackid = t.trackid
-JOIN genre_staging g ON t.genreid = g.genreid
-JOIN album_staging a ON t.albumid = a.albumid
-JOIN artist_staging ar ON a.artistid = ar.artistid
-JOIN mediatype_staging m ON t.mediatypeid = m.mediatypeid
-JOIN customer_staging c ON i.customerid = c.customerid
-JOIN employee_staging e ON c.supportrepid = e.employeeid
-JOIN dim_date d ON CAST(i.invoicedate AS DATE) = d.date;
+JOIN dim_invoice i ON il.invoiceid = i.dim_invoiceid
+JOIN dim_track t ON il.trackid = t.dim_trackid
+JOIN dim_genre g ON t.genreid = g.dim_genreid
+JOIN dim_album a ON t.albumid = a.dim_albumid
+JOIN dim_artist ar ON a.artistid = ar.dim_artistid
+JOIN dim_media_type m ON t.mediatypeid = m.dim_media_typeid
+JOIN dim_customer c ON i.customer_id = c.dim_customerid
+JOIN dim_employee e ON c.supportrepid = e.dim_employeeid
+JOIN dim_date d ON CAST(i.invoice_date AS DATE) = d.date;
 ```
 
 
