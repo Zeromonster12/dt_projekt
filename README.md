@@ -183,13 +183,18 @@ SELECT DISTINCT
     t.composer AS composer,
     t.miliseconds AS duration_ms,
     t.bytes AS size_bytes,
-    t.unitprice AS price
-FROM track_staging t;
+    t.unitprice AS price,
+    t.genreid AS genre_id,           
+    t.mediatypeid AS media_type_id,     
+    t.albumid AS album_id,
+    a.artist_id AS artist_id     
+FROM track_staging t
+JOIN dim_album a ON t.albumid = a.dim_albumid;
 ```
 
 - **Dim_Customer**: Uchováva informácie o zákazníkoch, vrátane ich kontaktných údajov a informácií o podporovaní zástupcovi.
 ```sql
-CREATE TABLE  dim_customer AS
+CREATE TABLE IF NOT EXISTS dim_customer AS
 SELECT DISTINCT
     c.customerid AS dim_customerid,
     c.firstname AS first_name,
@@ -203,6 +208,7 @@ SELECT DISTINCT
     c.phone AS phone,
     c.fax AS fax,
     c.email AS email,
+    e.employeeid AS support_rep_id,
     e.firstname AS support_rep_first_name,
     e.lastname AS support_rep_last_name
 FROM customer_staging c
@@ -291,12 +297,12 @@ SELECT
 FROM invoiceline_staging il
 JOIN dim_invoice i ON il.invoiceid = i.dim_invoiceid
 JOIN dim_track t ON il.trackid = t.dim_trackid
-JOIN dim_genre g ON t.genreid = g.dim_genreid
-JOIN dim_album a ON t.albumid = a.dim_albumid
-JOIN dim_artist ar ON a.artistid = ar.dim_artistid
-JOIN dim_media_type m ON t.mediatypeid = m.dim_media_typeid
+JOIN dim_genre g ON t.genre_id = g.dim_genreid
+JOIN dim_album a ON t.album_id = a.dim_albumid
+JOIN dim_artist ar ON a.artist_id = ar.dim_artistid
+JOIN dim_media_type m ON t.media_type_id = m.dim_media_typeid
 JOIN dim_customer c ON i.customer_id = c.dim_customerid
-JOIN dim_employee e ON c.supportrepid = e.dim_employeeid
+JOIN dim_employee e ON c.support_rep_id = e.dim_employeeid
 JOIN dim_date d ON CAST(i.invoice_date AS DATE) = d.date;
 ```
 
